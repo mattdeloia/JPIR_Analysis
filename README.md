@@ -84,4 +84,3 @@ JPI-R Analysis
     perfection**.
   - **RESPONSIBLE** has strong correlation with the trait of
     **honesty.**
-->
