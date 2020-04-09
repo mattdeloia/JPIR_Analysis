@@ -1,7 +1,7 @@
 JPI-R Analysis
 ================
 
-## Data obtained from the **The Eugene-Springfield Community Sample** repository and provided through the **dataverse** at harvard.edu.
+## Data obtained from the **The Eugene-Springfield Community Sample** repository at the **dataverse,** harvard.edu.
 
 ## JPI-R Results by 15 Dimensions and Faceted by Gender
 
@@ -39,12 +39,11 @@ JPI-R Analysis
 
 ##### Results:
 
-  - INNOVATIVE has strong corrleation to the cyberseucrity performance
-    traits of: creative, immaginative, curious, innovative/
+  - **INNOVATIVE** has strong corrleation to the cyberseucrity
+    performance traits of: **creative, imaginative, curious,
+    innovative.**
 
 ## JPI-R Cluster 2: Emotional
-
-##### This shows the JPI-R Dimensions for “Emotional” in ALL CAPS and a selection of the 360/525 PDA markers in all lower case.
 
 ![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
@@ -54,40 +53,35 @@ JPI-R Analysis
 
 ## JPI-R Cluster 3: Extroverted
 
-##### This shows the JPI-R Dimensions for “Extroverted” in ALL CAPS and a selection of the 360/525 PDA markers in all lower case.
-
 ![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ##### Results:
 
-  - ENERGY has strong correlation wtih the cybersecurity performance
-    traits of energetic, active, and vigorous.
-  - SOCIAL / SOCIAL CONFIDENCE has a strong corrleation with social and
-    extraverted and a strong negative correlation with introverted;
-    cybersecurity professionals report generally low sociability and
-    high introversions.
+  - **ENERGY** has strong correlation wtih the cybersecurity performance
+    traits of **energetic, active, and vigorous**.
+  - **SOCIAL / SOCIAL CONFIDENCE** have a strong corrleation with
+    **social and extraverted** and a strong negative correlation with
+    **introverted**; cybersecurity professionals report generally low
+    sociability and high introversions.
 
 ## JPI-R Cluster 4: Opportunistic
-
-##### This shows the JPI-R Dimensions for “Opportunistic” in ALL CAPS and a selection of the 360/525 PDA markers in all lower case.
 
 ![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ##### Results:
 
-  - RISK has moderate correlation wtih the cybersecurity performance
-    traits of daring, independent, and competitive.
+  - **RISK** has moderate correlation wtih the cybersecurity performance
+    traits of **daring, independent, and competitive**.
 
 ## JPI-R Cluster 5: Dependable
-
-##### This shows the JPI-R Dimensions for “Dependable” in ALL CAPS and a selection of the 360 PDA markers in all lower case.
 
 ![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ##### Results:
 
-  - ORGANIZATION has moderate/strong correlation wtih the cybersecurity
-    performance traits of organization, efficiency, perfection.
-  - RESPONSIBLE has strong correlation with the trait of honesty,
-    conventional and strait.
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+  - **ORGANIZATION** has moderate/strong correlation wtih the
+    cybersecurity performance traits of **organization, efficiency,
+    perfection**.
+  - **RESPONSIBLE** has strong correlation with the trait of
+    **honesty.**
+->
