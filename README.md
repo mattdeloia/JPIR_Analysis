@@ -1,7 +1,7 @@
 JPI-R Analysis
 ================
 
-## Data obtained from the **The Eugene-Springfield Community Sample** repository and provided through Dr. David Condon, University of Oregon and the **dataverse** at harvard.edu.
+## Data obtained from the **The Eugene-Springfield Community Sample** repository and provided through the **dataverse** at harvard.edu.
 
 ## JPI-R Results by 15 Dimensions and Faceted by Gender
 
