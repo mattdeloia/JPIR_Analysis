@@ -7,7 +7,13 @@ JPI-R Analysis
 
 ![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
+## Cluster Plot of JPI-R Dimensions
+
+##### Clustering of Dimensions show correlations within JPI-R clusters, though not strong.
+
 ![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
+
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
 ##### Greatest variability in the following Dimensions: INNOVAT, CONFID, RISK, BREADTH, ANXIETY, SOCIAL, EMPATH, COOPER, ENERGY, TRADIT, ORGAN
 
@@ -15,11 +21,11 @@ JPI-R Analysis
 
 ## Male results by AGE
 
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
 
 ## Female results by AGE
 
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ## 360 amd 525 PDA Correlations.
 
@@ -35,7 +41,7 @@ JPI-R Analysis
 
 ###### This data is filtered for only Males in the Age Range of 20 - 49.
 
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 ##### Results:
 
@@ -45,7 +51,7 @@ JPI-R Analysis
 
 ## JPI-R Cluster 2: Emotional
 
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ##### Results:
 
@@ -53,7 +59,7 @@ JPI-R Analysis
 
 ## JPI-R Cluster 3: Extroverted
 
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 ##### Results:
 
@@ -66,7 +72,7 @@ JPI-R Analysis
 
 ## JPI-R Cluster 4: Opportunistic
 
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ##### Results:
 
@@ -75,7 +81,7 @@ JPI-R Analysis
 
 ## JPI-R Cluster 5: Dependable
 
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 ##### Results:
 
