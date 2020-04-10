@@ -3,13 +3,13 @@ JPI-R Analysis
 
 ## Data obtained from the **The Eugene-Springfield Community Sample** repository at the **dataverse,** harvard.edu.
 
-## JPI-R Results by 15 Dimensions and Faceted by Gender
-
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
-
 ## Cluster Plot of JPI-R Dimensions
 
 ##### Clustering of Dimensions show correlations within JPI-R clusters, though not strong.
+
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
+
+## JPI-R Results by 15 Dimensions and Faceted by Gender
 
 ![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
