@@ -94,6 +94,8 @@ corrplot(cor(dfcluster), method="color", order="hclust", type="full", addrect=5,
 ##### Blue dashed line represents mean values for males reported in Table 1-2 of the **"JPI-R Technical Manual" by Douglas Jackson** and provided to the author by Sigma.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
+df10<- df %>% left_join(df1) %>% gather(COMPLEX:RESPON, key=Dimension, value=Score, na.rm = TRUE)
+
 df11a <- df_JPIRTechManualMales %>% select(Dimension, CombinedMean)
 df11a <- df11a %>% mutate(SEX="M")
 df11a <- rename(df11a, "JPIR_TM_Mean" = CombinedMean)
@@ -114,7 +116,8 @@ df11  %>% mutate(Dimension=reorder(Dimension, Score, FUN=mean)) %>%
 ##### Greatest variability in the following Dimensions: INNOVAT, CONFID, RISK, BREADTH, ANXIETY, SOCIAL, EMPATH, COOPER, ENERGY, TRADIT, ORGAN
 ##### Lowest variability in the following Dimensions: ASTUTE, TOLERAN, COMPLEX, RESPON
 
-## Male results by select demographics (High School, College, Blue Collar, Executives)
+## Male results by select demographics.
+#### Categories: High School, College, Blue Collar, Executives
 ##### Data extracted from Table 1-2 of the **"JPI-R Technical Manual" by Douglas Jackson** and provided to the author by Sigma.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
@@ -288,7 +291,7 @@ corrplot(cor(dfcluster), method="color", order="hclust", type="full", addrect=5,
 * **ORGANIZATION** has moderate/strong correlation wtih the cybersecurity performance traits of **organization, efficiency, perfection**.
 * **RESPONSIBLE** has strong correlation with the trait of **honesty.**
 
-## JPI-R Cluster 5: IPIP Questions
+## Summary Table: IPIP Questions
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 dfIPIP <- df %>% left_join (df1)  %>% left_join(df6d, by="ID") %>%  filter (AGE > 20 & AGE < 49, SEX=="M")
@@ -314,7 +317,7 @@ test2b %>% select(-IPIP_Item) %>% kable %>% kable_styling (bootstrap_options = c
 
 ```
 
-## Summary Table
+## Summary Table: Adjectives
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 JPIR <- c("COMPLEX", "BREADTH", "INNOVAT", "TOLERAN", "EMPATH", "ANXIETY", "COOPER", "SOCIAL", "CONFID", "ENERGY", "ASTUTE", "RISK", "ORGAN", "TRADIT", "RESPON")
 
