@@ -1,0 +1,322 @@
+---
+title: "JPI-R Analysis"
+output: github_document
+always_allow_html: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(foreign)
+library (memisc)
+library(Rmisc)
+library(tidyverse)
+library(corrplot)
+library(kableExtra)
+library(reshape2)
+library(readxl)
+
+#read files
+df <- as.data.set(spss.portable.file("demographics.por"), to.data.frame=T)
+df<-as.data.frame(df)
+dfIPIPQuestions <- read_excel("IPIP2539items.xls")
+df_JPIRTechManualMales <- read_excel("JPIRTechnicalManual_Males.xls")
+df_JPIRTechManualInterests <- read_excel("JPIRTechnicalManual_InterestsMales.xls")
+
+df1 <- as.data.set(spss.portable.file("JPIR_scales-1.por"), to.data.frame=T)
+df1<-as.data.frame(df1)
+
+df2 <- as.data.set(spss.portable.file("525_PDA-1.por"), to.data.frame=T)
+df2<-as.data.frame(df2) 
+df2 <- df2 %>%  gather(ABNORMAL:YOUNG, key=Category, value=Score)
+df2$Category<- tolower(df2$Category) 
+df2<- df2 %>% spread(key=Category, value=Score)
+
+df3 <- as.data.set(spss.portable.file("CISS-1.por"), to.data.frame=T)
+df3<-as.data.frame(df3) 
+#df3 <-data.frame(as.data.set(spss.system.file("CISS.sav")))
+
+#df4 <- as.data.set(spss.portable.file("JPIR-1.por"), to.data.frame=T)
+#df4<-as.data.frame(df4) 
+
+df5 <- as.data.set(spss.portable.file("360PDA.por"), to.data.frame=T)
+df5 <- as.data.frame(df5)
+df5 <- df5 %>%  gather(ACTIVE:WORLDLY, key=Category, value=Score)
+df5$Category<- tolower(df5$Category) 
+df5<- df5 %>% spread(key=Category, value=Score)
+
+df6 <- as.data.set(spss.portable.file("IPIP2539-1.por"), to.data.frame=T)
+df6 <- as.data.frame(df6)
+#df6 <-data.frame(as.data.set(spss.system.file("IPIP2539.sav")))
+
+
+likertNum <- function(x){
+  case_when(
+    x == "VERY ACCURATE" ~ 5,
+    x == "MODERATELY ACCURATE" ~ 4,
+    x == "NEITHER INACC NOR ACCUR" ~ 3,
+    x == "MODERATELY INACCURATE" ~ 2,
+    x == "VERY INACCURATE" ~ 1
+  )
+}
+
+#Reverse Scores for select columnn
+#columnsToReverse <-  c("A10", "A106", "A11",	"A113",	"A12",	"A128",	"A13",	"A130",	"A132",	"A2",	"A4",	"A42",	"A51",	"A56",	"A6",	"A66",	"A67",	"A84",	"A87",	"A97")
+
+df6b <- df6 %>% dplyr::select (ID, A1:A99, C1:C9, M1:M9) %>% gather(A1:A99, C1:C9, M1:M9, key=Question, value = Response, na.rm = TRUE)
+df6b$Response <- toupper(df6b$Response)
+
+df6c <- df6b %>% 
+  mutate_at(vars(`Response`), likertNum) %>% 
+  spread(key=Question, value=Response) 
+
+df6d <- df6 %>%  dplyr::select(-(A1:A99),-(C1:C9), -(M1:M9)) %>% left_join(df6c, by="ID")
+
+```
+
+## Data obtained from the **The Eugene-Springfield Community Sample** repository at the **dataverse,** harvard.edu.
+
+## Cluster Plot of JPI-R Dimensions
+
+##### Clustering of Dimensions show correlations within JPI-R clusters, though not strong.   
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+dfcluster <- df1 #%>% left_join(df1) %>% filter (SEX=="F") %>% select (ID, COMPLEX:RESPON)
+dfcluster<-scale(dfcluster)
+
+dfcluster<-data.frame(dfcluster, row.names=1)
+dfcluster<- na.omit(dfcluster)
+
+corrplot(cor(dfcluster), method="color", order="hclust", type="full", addrect=5, cl.lim=c(-1,1), addCoef.col="black", rect.col="green", diag = FALSE, number.font=1, number.digits = 1, number.cex = .7)
+```
+
+## JPI-R Results by 15 Dimensions and Faceted by Gender
+##### Blue dashed line represents mean values for males reported in Table 1-2 of the **"JPI-R Technical Manual" by Douglas Jackson** and provided to the author by Sigma.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+df11a <- df_JPIRTechManualMales %>% select(Dimension, CombinedMean)
+df11a <- df11a %>% mutate(SEX="M")
+df11a <- rename(df11a, "JPIR_TM_Mean" = CombinedMean)
+
+df11 <-df10 %>% filter(AGE>20) %>% summarySE(measurevar = "Score", groupvars = c("SEX", "Dimension")) %>% left_join(df11a)
+
+df11  %>% mutate(Dimension=reorder(Dimension, Score, FUN=mean)) %>%
+     ggplot(aes(x=Dimension, y=Score, color=SEX)) + geom_point(size=2) + 
+    geom_line(aes(y=JPIR_TM_Mean, color=SEX, group=SEX),linetype="dashed", size=1, na.rm = TRUE) +
+     scale_color_manual(values= c("darkgray", "blue"))  + 
+     theme_light() +
+     theme(legend.title= element_text(color="blue", size=10), legend.position = "top") + 
+     ylim(2.5,17.5) + geom_errorbar(aes(ymin=(Score-ci), ymax=Score+ci), width=.1) + 
+     ylab("Average Score") + geom_text(aes( label = round(Score, 1) ),  vjust = .0, hjust = -.3, size=3)   + 
+     theme(axis.text.x = element_text(angle=20, size=8)) 
+```
+
+##### Greatest variability in the following Dimensions: INNOVAT, CONFID, RISK, BREADTH, ANXIETY, SOCIAL, EMPATH, COOPER, ENERGY, TRADIT, ORGAN
+##### Lowest variability in the following Dimensions: ASTUTE, TOLERAN, COMPLEX, RESPON
+
+## Male results by select demographics (High School, College, Blue Collar, Executives)
+##### Data extracted from Table 1-2 of the **"JPI-R Technical Manual" by Douglas Jackson** and provided to the author by Sigma.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+df12a <- df_JPIRTechManualMales %>% gather(HighSchoolMean:CombinedMean, key=Category, value=MeanScore)
+df12a$Category <- factor(df12a$Category, levels = c ("HighSchoolMean", "CollegeMean", "BlueCollarMean", "ExecutivesMean", "CombinedMean")) 
+df12a %>%  filter(Category %in% c("HighSchoolMean", "CollegeMean", "BlueCollarMean", "CombinedMean", "ExecutivesMean")) %>% mutate(Dimension=reorder(Dimension, MeanScore, FUN=mean)) %>%
+     ggplot(aes(x=Dimension, y=MeanScore, color=Category)) + geom_point(size=2) + 
+   geom_line(aes(group=Category, linetype=Category), size=1, na.rm = TRUE) +
+  scale_linetype_manual(values=c("blank", "blank", "blank", "blank", "dashed")) +
+     scale_color_manual(values= c("lightgreen", "green", "lightblue", "blue", "red"))  + 
+     theme_light() +
+     theme(legend.title= element_text(color="blue", size=10), legend.position = "top") + 
+     ylim(5,15) + 
+  #geom_errorbar(aes(ymin=(Score-ci), ymax=Score+ci), width=.1) + 
+     ylab("AverageScore") + geom_text(aes( label = round(MeanScore, 1) ),  vjust = .0, hjust = -.3, size=3)   + 
+     theme(axis.text.x = element_text(angle=20, size=8)) 
+```
+
+
+## Male results by AGE
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+df12<-df10 %>% filter(AGE>=20 & AGE<60) %>% mutate (AgeGroup=ifelse(AGE<30, "20s", ifelse(AGE<40, "30s", ifelse(AGE<50, "40s", ifelse(AGE<60, "50s", ifelse(AGE<70, "60s", "70+")))))) %>% summarySE(measurevar = "Score", groupvars = c("Dimension", "AgeGroup", "SEX" ))
+
+df12 %>%  filter(SEX=="M") %>% mutate(Dimension=reorder(Dimension, Score, FUN=mean)) %>%
+     ggplot(aes(x=Dimension, y=Score, color=AgeGroup)) + geom_point(size=2) + 
+     #scale_color_manual(values= c("tomato", "blue"))  + 
+     theme_light() +
+     theme(legend.title= element_text(color="blue", size=10), legend.position = "top") + 
+     ylim(0,20) + geom_errorbar(aes(ymin=(Score-ci), ymax=Score+ci), width=.1) + 
+     ylab("AverageScore") + geom_text(aes( label = round(Score, 1) ),  vjust = .0, hjust = -.3, size=3)   + 
+     theme(axis.text.x = element_text(angle=20, size=8)) 
+
+```
+
+## Female results by AGE
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+df12 %>%  filter(SEX=="F") %>% mutate(Dimension=reorder(Dimension, Score, FUN=mean)) %>%
+     ggplot(aes(x=Dimension, y=Score, color=AgeGroup)) + geom_point(size=2) + 
+     #scale_color_manual(values= c("tomato", "blue"))  + 
+     theme_light() +
+     theme(legend.title= element_text(color="blue", size=10), legend.position = "top") + 
+     ylim(0,20) + geom_errorbar(aes(ymin=(Score-ci), ymax=Score+ci), width=.1) + 
+     ylab("AverageScore") + geom_text(aes( label = round(Score, 1) ),  vjust = .0, hjust = -.3, size=3)   + 
+     theme(axis.text.x = element_text(angle=20, size=8))
+```
+
+## Vocational Interests and Correlation to JPI-R Dimensions (Males).
+##### Data extracted from Table 4-18 of the **"JPI-R Technical Manual" by Douglas Jackson** and provided to the author by Sigma.  Table 4-18 is described as Correlations between the Jackson Vocational Interest Survey (JVIS) and the JPI: Males (N = 127).
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+df13<- df_JPIRTechManualInterests
+
+df13 %>% arrange(-INNOVAT) %>%  kable %>% kable_styling (bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T)
+```
+
+
+## 360 amd 525 PDA Correlations.
+
+#### This analysis aligns well-documented cybersecurity behavioral traits to the 15 measures in the JPI-R. These relationships aim to identify dimensions where high scores may suggest a propensity for cybersecurity roles.
+
+###### The 360 PDA is an inventory of person-descriptive adjectives that included Goldberg's (1992) 100 unipolar Big-Five factor markers, plus terms from each of the item clusters that have been hypothesized as potentially beyond the Big Five (Saucier & Goldberg, 1998).
+###### The 525-PDA, a set of the 500 most familiar English person-descriptive adjectives (Saucier, 1997), plus the terms from Saucier's (1994) 40-item Big-Five "Mini-Markers" that were not already included.  
+
+## JPI-R Cluster 1: Analytical
+##### This shows the JPI-R Dimensions for "Analytical" in ALL CAPS and a selection of the 360/525 PDA markers in all lower case.
+###### This data is filtered for only Males in the Age Range of 20 - 49.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+df20 <- df %>% left_join (df1) %>%  filter (AGE > 20 & AGE < 59, SEX=="M") %>% left_join(df5) %>% left_join(df2, by="ID")
+
+test <- df20 %>% select(ID, COMPLEX:youthful)
+test<-scale(test)
+test<-data.frame(test, row.names=1)
+test<- na.omit(test)
+test<-cor(test)
+test<-as.data.frame(test)
+test <- rownames_to_column(test, "Category") %>% gather(COMPLEX:youthful, key=Category1, value=Correlation)
+test1<-test%>% filter(Category %in% c("COMPLEX", "BREADTH", "INNOVAT", "TOLERAN"), Correlation >.5 | Correlation <(-1) )
+
+df21 <- df20 %>% select(ID, COMPLEX, BREADTH, INNOVAT, TOLERAN, clever, complex.x, creative.x, creative.y, deep.y,  curious.x, eloquent, imaginat.y, original, talented, innovati, inquisit, intellec.x, philosop.x, reliable.x, adaptabl)
+
+dfcluster <- df21
+dfcluster<-scale(dfcluster)
+
+dfcluster<-data.frame(dfcluster, row.names=1)
+dfcluster<- na.omit(dfcluster)
+
+corrplot(cor(dfcluster), method="color", order="hclust", type="full", addrect=3, cl.lim=c(-1,1), addCoef.col="black", rect.col="green", diag = FALSE, number.font=1, number.digits = 1, number.cex = .7)
+```
+
+##### Results: 
+* **INNOVATIVE** has strong corrleation to the cyberseucrity performance traits of: **creative, imaginative, curious, innovative.**
+
+## JPI-R Cluster 2: Emotional
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+test2 <-test %>% filter(Category %in% c("EMPATH", "ANXIETY", "COOPER"), Correlation >.45 | Correlation <(-1) )
+
+df21<- df20  %>%  select(ID, EMPATH, ANXIETY, COOPER, tense, anxious.y, cranky.x, emotiona.x, excitabl, insecure.y, moody.x, nervous.y, short_te, tense, worried, temperam.x, afraid, irritate, fretful.y, emotiona.y, anxious.x, scared, compassi.y, moody.x, upset, excitabl, crabby, annoyed, insecure.x, reliable.x)
+
+dfcluster <- df21
+dfcluster<-scale(dfcluster)
+
+dfcluster<-data.frame(dfcluster, row.names=1)
+dfcluster<- na.omit(dfcluster)
+
+corrplot(cor(dfcluster), method="color", order="hclust", type="full", addrect=2, cl.lim=c(-1,1), addCoef.col="black", rect.col="green", diag = FALSE, number.font=1, number.digits = 1, number.cex = .7)
+```
+
+##### Results: 
+* None to note.
+
+## JPI-R Cluster 3: Extroverted
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+test3<-test%>% filter(Category %in% c("SOCIAL", "CONFID", "ENERGY"), Correlation >.5 | Correlation <(-.4) )
+
+df21<- df20  %>% left_join(df5) %>% select (ID, SOCIAL, CONFID, ENERGY, outgoing, extraver.y, extraver.x, active.x, active.y, ambitiou, energeti.x, energeti.y, extraver.x, fatiguel, outspoke.y, outspoke.x, talkativ, verbal, vigorous, sociable, social, reliable.x, independ.x, independ.y, adaptabl, introver)
+
+dfcluster <- df21
+dfcluster<-scale(dfcluster)
+
+dfcluster<-data.frame(dfcluster, row.names=1)
+dfcluster<- na.omit(dfcluster)
+
+corrplot(cor(dfcluster), method="color", order="hclust", type="full", addrect=3, cl.lim=c(-1,1), addCoef.col="black", rect.col="green", diag = FALSE, number.font=1, number.digits = 1, number.cex = .7)
+```
+
+##### Results: 
+* **ENERGY** has strong correlation wtih the cybersecurity performance traits of **energetic, active, and vigorous**.
+* **SOCIAL / SOCIAL CONFIDENCE** have a strong corrleation with **social and extraverted** and a strong negative correlation with **introverted**; cybersecurity professionals report generally low sociability and high introversions.
+
+## JPI-R Cluster 4: Opportunistic
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+test4<-test%>% filter(Category %in% c("ASTUTE", "RISK"), Correlation >.33 | Correlation <(-1) )
+
+df21<- df20 %>% left_join(df5)  %>% select(ID, ASTUTE, RISK, unpredic.y, deep.y, rambunct, scheming, daring.y, opportun, outspoke.y, rambunct, scheming, sly, competit.x, impulsiv, cunning, assertiv, boistero, independ, manipula, reliable.x, independ.y, adaptabl)
+
+dfcluster <- df21
+dfcluster<-scale(dfcluster)
+
+dfcluster<-data.frame(dfcluster, row.names=1)
+dfcluster<- na.omit(dfcluster)
+
+corrplot(cor(dfcluster), method="color", order="hclust", type="full", addrect=5, cl.lim=c(-1,1), addCoef.col="black", rect.col="green", diag = FALSE, number.font=1, number.digits = 1, number.cex = .7)
+```
+
+##### Results: 
+* **RISK** has moderate correlation wtih the cybersecurity performance traits of **daring, independent, and competitive**.
+
+## JPI-R Cluster 5: Dependable
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+test5 <-test%>% filter(Category %in% c("ORGAN", "TRADIT", "RESPON"), Correlation >.5 | Correlation <(-1) )
+
+df21<- df20 %>% left_join(df5) %>% select(ID, ORGAN, TRADIT, RESPON, conserva.y, conserva.x, conventi, devout, efficien, honest.x, national, old_fash.x, organize.x, patrioti, perfecti, religiou.x,religiou.y, reverent, strait_l, traditio, reliable.x, reliable.y, independ.x, adaptabl)
+
+dfcluster <- df21
+dfcluster<-scale(dfcluster)
+
+dfcluster<-data.frame(dfcluster, row.names=1)
+dfcluster<- na.omit(dfcluster)
+
+corrplot(cor(dfcluster), method="color", order="hclust", type="full", addrect=5, cl.lim=c(-1,1), addCoef.col="black", rect.col="green", diag = FALSE, number.font=1, number.digits = 1, number.cex = .7)
+```
+
+##### Results: 
+* **ORGANIZATION** has moderate/strong correlation wtih the cybersecurity performance traits of **organization, efficiency, perfection**.
+* **RESPONSIBLE** has strong correlation with the trait of **honesty.**
+
+## JPI-R Cluster 5: IPIP Questions
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+dfIPIP <- df %>% left_join (df1)  %>% left_join(df6d, by="ID") %>%  filter (AGE > 20 & AGE < 49, SEX=="M")
+
+test2 <- dfIPIP %>% select(ID, COMPLEX:X99)
+test2<-scale(test2)
+test2<-data.frame(test2, row.names=1)
+test2<- na.omit(test2)
+test2<-cor(test2)
+test2<-as.data.frame(test2)
+test2 <- rownames_to_column(test2, "Category") %>% gather(COMPLEX:X99, key=Category1, value=Correlation)
+JPIR <- c("COMPLEX", "BREADTH", "INNOVAT", "TOLERAN", "EMPATH", "ANXIETY", "COOPER", "SOCIAL", "CONFID", "ENERGY", "ASTUTE", "RISK", "ORGAN", "TRADIT", "RESPON")
+
+test2b <- test2 %>% filter (!(Category1 %in% c(JPIR)), Category %in% c(JPIR), Correlation > .5 | Correlation < -.5) %>%  arrange(Category,-Correlation) %>% mutate(IPIP_Item=paste(Category,"_",Category1)) %>%  mutate(Correlation=round(Correlation, 2)) 
+test2b$IPIP_Item <-toupper(test2b$IPIP_Item)
+
+test2b<-rename(test2b, "IPIP_Item#"=Category1) 
+test2b <- test2b %>% left_join(dfIPIPQuestions)
+test2b %>% select(-IPIP_Item) %>% kable %>% kable_styling (bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T)
+
+#write.csv(test2b, "IPIPCorrelationswJPIR.csv")
+#test2d <-dcast(test2c, IPIP_Item ~ Category) %>% dplyr::select(-IPIP_Item)
+
+```
+
+## Summary Table
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+JPIR <- c("COMPLEX", "BREADTH", "INNOVAT", "TOLERAN", "EMPATH", "ANXIETY", "COOPER", "SOCIAL", "CONFID", "ENERGY", "ASTUTE", "RISK", "ORGAN", "TRADIT", "RESPON")
+
+test %>% filter (!(Category1 %in% JPIR), Category %in% JPIR, Correlation > .48 | Correlation < -.48) %>%  arrange(Category,-Correlation) %>% mutate(Correlation=round(Correlation, 2)) %>% kable %>% kable_styling (bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T)
+```
