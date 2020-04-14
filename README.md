@@ -3515,7 +3515,7 @@ JobSecurity
   - **RESPONSIBLE** has strong correlation with the trait of
     **honesty.**
 
-## JPI-R Cluster 5: IPIP Questions
+## Summary Table: IPIP Questions
 
 <table class="table table-striped table-hover table-condensed" style="margin-left: auto; margin-right: auto;">
 
@@ -7845,7 +7845,7 @@ Tend to vote for liberal political candidates.
 
 </table>
 
-## Summary Table
+## Summary Table: Adjectives
 
 <table class="table table-striped table-hover table-condensed" style="margin-left: auto; margin-right: auto;">
 
