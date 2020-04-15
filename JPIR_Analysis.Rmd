@@ -15,6 +15,10 @@ library(corrplot)
 library(kableExtra)
 library(reshape2)
 library(readxl)
+library(cluster)
+library(factoextra)
+library(tidyverse)
+library(stats)
 
 #read files
 df <- as.data.set(spss.portable.file("demographics.por"), to.data.frame=T)
@@ -22,6 +26,7 @@ df<-as.data.frame(df)
 dfIPIPQuestions <- read_excel("IPIP2539items.xls")
 df_JPIRTechManualMales <- read_excel("JPIRTechnicalManual_Males.xls")
 df_JPIRTechManualInterests <- read_excel("JPIRTechnicalManual_InterestsMales.xls")
+df_clusteranalysis <- read_excel("ClusterDataTable.xls")
 
 df1 <- as.data.set(spss.portable.file("JPIR_scales-1.por"), to.data.frame=T)
 df1<-as.data.frame(df1)
@@ -76,22 +81,9 @@ df6d <- df6 %>%  dplyr::select(-(A1:A99),-(C1:C9), -(M1:M9)) %>% left_join(df6c,
 
 ## Data obtained from the **The Eugene-Springfield Community Sample** repository at the **dataverse,** harvard.edu.
 
-## Cluster Plot of JPI-R Dimensions
 
-##### Clustering of Dimensions show correlations within JPI-R clusters, though not strong.   
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-dfcluster <- df1 #%>% left_join(df1) %>% filter (SEX=="F") %>% select (ID, COMPLEX:RESPON)
-dfcluster<-scale(dfcluster)
-
-dfcluster<-data.frame(dfcluster, row.names=1)
-dfcluster<- na.omit(dfcluster)
-
-corrplot(cor(dfcluster), method="color", order="hclust", type="full", addrect=5, cl.lim=c(-1,1), addCoef.col="black", rect.col="green", diag = FALSE, number.font=1, number.digits = 1, number.cex = .7)
-```
-
-## JPI-R Results by 15 Dimensions and Faceted by Gender
-##### Blue dashed line represents mean values for males reported in Table 1-2 of the **"JPI-R Technical Manual" by Douglas Jackson** and provided to the author by Sigma.
+## Eugene-Springfield JPI-R Results by Gender
+###### The **blue dashed line** represents mean values for males reported in Table 1-2 of the **"JPI-R Technical Manual" by Douglas Jackson** and provided to the author by Sigma.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 df10<- df %>% left_join(df1) %>% gather(COMPLEX:RESPON, key=Dimension, value=Score, na.rm = TRUE)
@@ -113,12 +105,9 @@ df11  %>% mutate(Dimension=reorder(Dimension, Score, FUN=mean)) %>%
      theme(axis.text.x = element_text(angle=20, size=8)) 
 ```
 
-##### Greatest variability in the following Dimensions: INNOVAT, CONFID, RISK, BREADTH, ANXIETY, SOCIAL, EMPATH, COOPER, ENERGY, TRADIT, ORGAN
-##### Lowest variability in the following Dimensions: ASTUTE, TOLERAN, COMPLEX, RESPON
-
-## Male results by select demographics.
-#### Categories: High School, College, Blue Collar, Executives
-##### Data extracted from Table 1-2 of the **"JPI-R Technical Manual" by Douglas Jackson** and provided to the author by Sigma.
+## JPI-R Technical Manual results for Males by select demographics.
+##### Categories: High School, College, Blue Collar, Executives
+###### Data extracted from Table 1-2 of the **"JPI-R Technical Manual" by Douglas Jackson** and provided to the author by Sigma.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 df12a <- df_JPIRTechManualMales %>% gather(HighSchoolMean:CombinedMean, key=Category, value=MeanScore)
@@ -136,8 +125,7 @@ df12a %>%  filter(Category %in% c("HighSchoolMean", "CollegeMean", "BlueCollarMe
      theme(axis.text.x = element_text(angle=20, size=8)) 
 ```
 
-
-## Male results by AGE
+## Eugene-Springfield JPI-R results for Males by Age
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 df12<-df10 %>% filter(AGE>=20 & AGE<60) %>% mutate (AgeGroup=ifelse(AGE<30, "20s", ifelse(AGE<40, "30s", ifelse(AGE<50, "40s", ifelse(AGE<60, "50s", ifelse(AGE<70, "60s", "70+")))))) %>% summarySE(measurevar = "Score", groupvars = c("Dimension", "AgeGroup", "SEX" ))
@@ -153,7 +141,166 @@ df12 %>%  filter(SEX=="M") %>% mutate(Dimension=reorder(Dimension, Score, FUN=me
 
 ```
 
-## Female results by AGE
+##  K-Means Cluster Analysis of Eugene-Springfiled JPI-R results for males
+##### K-means cluster analysis aimed to define 10 most common profiles of males.  This approach is also  presented in the JPI-R Technical Manual Modal Profile Analysis.
+###### As described by Jackson: "Each modal profile represents the personality profile and the patterning of behavioral dimensions that is characteristic of the subset of persons in a particular population. In general, individuals will not be perfect representations of a single modal profile but, rather, combinations of several profiles. Even so, the modal profile most similar to an individual’s observed profile is likely to describe him or her best. By the identification of a variety of modal profiles that appear with some frequency in the population, it is possible to classify a majority of the individuals in terms of their similarities to these “pure” types. The extent to which this is possible is an empirical matter, but the goal is to reduce the apparently chaotic diversity of individual profiles to a manageable system involving relatively few modal profiles."
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+######K Means Clustering
+set.seed(98)
+sample <-  df %>% left_join(df1) %>% filter(SEX=="M") %>% 
+  dplyr::select(ID , COMPLEX:RESPON) 
+
+sample<-na.omit(sample)
+sample$ID <- as.character(sample$ID)
+dfcluster<- data.frame(sample, row.names=1)
+dfcluster<- as.data.frame(lapply(dfcluster, scale))
+myclusters <- kmeans(dfcluster, centers = 10, nstart = 25)
+#myclusters$centers
+#myclusters$size
+
+fviz_cluster(myclusters, data = dfcluster)
+
+# Correlation of Clusters
+df_clustanalysis2 <- df_clusteranalysis %>% gather(COMPLEX:RESPON, key=Category, value=Score)
+df_clustanalysis2$Cluster <- factor (df_clustanalysis2$Cluster, levels=c("1", "10", "2", "5", "3", "8", "4", "9", "6", "7"))
+df_clustanalysis2 %>% ggplot() + 
+  geom_col(aes(x=Category, y=Score, fill=Score))+ 
+  scale_fill_gradient(low = "red", high = "green") +
+  coord_flip() + 
+  facet_grid(.~Cluster)  +
+  theme(legend.title= element_text(color="blue", size=10), legend.position = "blank")
+```
+
+## Correlation of Vocational Interests to JPI-R Dimensions for Males
+###### Data extracted from Table 4-18 of the **"JPI-R Technical Manual" by Douglas Jackson** and provided to the author by Sigma.  Table 4-18 is described as Correlations between the Jackson Vocational Interest Survey (JVIS) and the JPI: Males (N = 127).
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+df13<- df_JPIRTechManualInterests
+
+df13 %>% arrange(-INNOVAT) %>%  kable %>% kable_styling (bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T)
+```
+
+
+## JPI-R correlations to a test constructed of 8-10 IPIP Items for each JPI-R dimension
+##### All CAPS represents the JPI-R dimension; lower case represents a replicated scale using IPIP items.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+dfIPIP2<- df %>% left_join (df1)  %>% left_join(df6d, by="ID") %>% filter(SEX=="M")
+
+#Reverse Scores for select columnn
+columnsToReverse <-  c('V91',	'S16',	'X218',	'V189',	'V43',	'V211',	'X228',	'S22',	'X272',	'E141', 'P346',	'V49',	'X250',	'V183',	'X157',	'X265',	'X176',	'H587',	'Q45',	'E134',	'E7',	'X239',	'V187',	'D93',	'E71',	'X178',	'X109',  'H704',  'V282', 'H931',	'E100',	'V128',	'H627',	'V332',	'R24',	'H1144',	'X269',	'X254',	'X173',	'E166',	'H317',	'D100',	'X103',	'V6',	'X118',	'H312',	'H897',	'V103',	'Q108',	'E83',	'H701',	'Q143',	'P431',	'Q30',	'X28',	'H1042',	'H369',	'Q218',	'S26',	'E144', 'N23')
+
+dfIPIP2[,columnsToReverse] <- 6-dfIPIP2[, columnsToReverse]
+
+#Raw Scoring (124 Questions)
+dfIPIP3 <- dfIPIP2 %>% group_by(ID) %>%  
+     mutate("Anxiety" = (sum(H926,	X269, H927, H754, H761, E92, X265,	H755 ) / 40) , #H758, E141      
+            "Astute" = (sum(R78,	P432,	H2006,	Q61,	Q30,	H773,	H450,	S26, H2003)/ 45), #,, H1137		
+            "Breadth" = (sum(X109,	V2,	H1247,	X211,	H1284,	H1042,	H1259,	V140, V332	) / 45) , #	H1293,	 D72,	H1268
+            "Complex" = (sum(X228,	X176,	X178,	V291,	X254,	H1276,	X239,	X28) / 40) , #X248 
+            "Confid" = (sum(V43,	S22,	V91,	Q134,	S29,	P364,	Q45,	S16	) / 40) , #Q14,P346,	Q176, H17
+            "Cooper" = (sum(E134,	P420,	H1028,	D107,	H96,	H369	,V187,	P431	)/ 40), #H1057,	P441,H961 
+            "Empath" = (sum(D93,	E174,	D19,	X253,	H173,	E144,	D6) / 40) , #,	E166,	V128,	H701,	Q256
+            "Energy" = (sum(H54,	H2015,	H554,	H627,	H533,	H555,	Q151,	D109) / 40) , #	V211,	H1144,	V50,	H79
+            "Innovat" = (sum(X272,	H53,	V259,	H1313,	X14,	V5,	V226,	H1230) / 40) , #H471,	V189,	H1279,	V155 
+            "Organ" = (sum(E7	,V98,	Q104,	E11,	V49,	H931,	H1161,	Q163) / 40) , #,	H215,	V261,	H897,	E100
+            "Respon" = (sum(Q111,	Q254,	D52,	V103,	Q108,	H152,	Q143,	V93) / 40) , #addedH1303, V170, V304, N23
+            "Risk" = (sum(S4,	H864,	X250	,S1,	H876,	Q95,	H317	,S19		) / 40) ,  #E71,	R58,	R69
+            "Social" = (sum(D70,	H587,	H965,	X103,	V183,	E83,	D3,	H527) / 40) , #,	H704,	H78,	X161,	H1366
+            "Toleran" = (sum(R24,	D100,	X173,	H456,	H1104,	Q218, D21, H312) / 50) , #	,		V6,	X118
+            "Tradit"= (sum(X218,	V282,	V39,	Q193,	X126,	X35,	V210,	P458) / 40) ) %>% #,	P479,	Q26,	V84,	X157
+          select (ID, COMPLEX:RESPON, Anxiety:Tradit) 
+
+dfcluster <- dfIPIP3
+dfcluster<-scale(dfcluster)
+
+dfcluster<-data.frame(dfcluster, row.names = 1)
+dfcluster<- na.omit(dfcluster)
+
+corrplot(cor(dfcluster), method="color", order="hclust", type="full", addrect=15, cl.lim=c(-1,1), addCoef.col="black", rect.col="green", diag = FALSE, number.font=1, number.digits = 1, number.cex = .7)
+```
+
+## Demonstration of JPI-R and IPIP test results for a select individual
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+dfIPIP3<- data.frame(dfIPIP3, row.names = 1)
+dfIPIP3<- na.omit(dfIPIP3)
+dfIPIP4<-scale(dfIPIP3)
+dfIPIP4<- data.frame(dfIPIP4)
+dfIPIP4<-rownames_to_column(dfIPIP4, "ID")
+dfIPIP4<-data.frame(dfIPIP4)
+df_demo <- dfIPIP4 %>% gather(COMPLEX:RESPON, key=Category, value=JPIR) %>% select(ID, Category, JPIR)
+df_demo2 <- dfIPIP4 %>% gather(Anxiety:Tradit, key=Category, value=IPIP) %>% select(ID, Category, IPIP)
+df_demo2$Category <-toupper(df_demo2$Category)
+df_demo3<-df_demo %>% left_join(df_demo2 ) %>% mutate(Delta=(abs(JPIR-IPIP))) %>% gather(JPIR:Delta, key=Test, value=Score)
+
+#df_demo3 %>% ggplot() + geom_boxplot(aes(x=Category, y=Score, fill=Test))
+
+#df_demo3 %>% filter(ID=="1003") %>% ggplot(aes(x=Category, y=Score, color=Test, group=Test, linetype=Test)) + geom_point() + geom_line(size=1) + scale_linetype_manual(values=c("blank", "dashed",  "dashed"))
+
+df_demo3 %>% filter(ID=="1008") %>% ggplot(aes(x=Category, y=Score, color=Test, group=Test, linetype=Test)) + geom_point() + geom_line(size=1) + scale_linetype_manual(values=c("blank", "dashed",  "dashed")) +
+     theme(legend.title= element_text(color="blue", size=10), legend.position = "top")
+
+#df_demo3 %>% filter(ID=="1010") %>% ggplot(aes(x=Category, y=Score, color=Test, group=Test, linetype=Test)) + geom_point() + geom_line(size=1) + scale_linetype_manual(values=c("blank", "dashed",  "dashed"))
+
+#df_demo3 %>% filter(ID=="1016") %>% ggplot(aes(x=Category, y=Score, color=Test, group=Test, linetype=Test)) + geom_point() + geom_line(size=1) + scale_linetype_manual(values=c("blank", "dashed",  "dashed"))
+```
+
+## Summary Table: IPIP Questions
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+dfIPIP <- df %>% left_join (df1)  %>% left_join(df6d, by="ID") %>%  filter (AGE > 20 & AGE < 49, SEX=="M")
+
+test2 <- dfIPIP %>% select(ID, COMPLEX:X99)
+test2<-scale(test2)
+test2<-data.frame(test2, row.names=1)
+test2<- na.omit(test2)
+test2<-cor(test2)
+test2<-as.data.frame(test2)
+test2 <- rownames_to_column(test2, "Category") %>% gather(COMPLEX:X99, key=Category1, value=Correlation)
+JPIR <- c("COMPLEX", "BREADTH", "INNOVAT", "TOLERAN", "EMPATH", "ANXIETY", "COOPER", "SOCIAL", "CONFID", "ENERGY", "ASTUTE", "RISK", "ORGAN", "TRADIT", "RESPON")
+
+test2b <- test2 %>% filter (!(Category1 %in% c(JPIR)), Category %in% c(JPIR), Correlation > .5 | Correlation < -.5) %>%  arrange(Category,-Correlation) %>% mutate(IPIP_Item=paste(Category,"_",Category1)) %>%  mutate(Correlation=round(Correlation, 2)) 
+test2b$IPIP_Item <-toupper(test2b$IPIP_Item)
+
+test2b<-rename(test2b, "IPIP_Item#"=Category1) 
+test2b <- test2b %>% left_join(dfIPIPQuestions)
+test2b %>% select(-IPIP_Item) %>% kable %>% kable_styling (bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T)
+
+#write.csv(test2b, "IPIPCorrelationswJPIR.csv")
+#test2d <-dcast(test2c, IPIP_Item ~ Category) %>% dplyr::select(-IPIP_Item)
+
+```
+
+## Summary Table: Adjectives
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+df20 <- df %>% left_join (df1) %>%  filter (AGE > 20 & AGE < 59, SEX=="M") %>% left_join(df5) %>% left_join(df2, by="ID")
+JPIR <- c("COMPLEX", "BREADTH", "INNOVAT", "TOLERAN", "EMPATH", "ANXIETY", "COOPER", "SOCIAL", "CONFID", "ENERGY", "ASTUTE", "RISK", "ORGAN", "TRADIT", "RESPON")
+test <- df20 %>% select(ID, COMPLEX:youthful)
+test <- df20 %>% select(ID, COMPLEX:youthful)
+test<-scale(test)
+test<-data.frame(test, row.names=1)
+test<- na.omit(test)
+test<-cor(test)
+test<-as.data.frame(test)
+test <- rownames_to_column(test, "Category") %>% gather(COMPLEX:youthful, key=Category1, value=Correlation)
+test %>% filter (!(Category1 %in% JPIR), Category %in% JPIR, Correlation > .48 | Correlation < -.48) %>%  arrange(Category,-Correlation) %>% mutate(Correlation=round(Correlation, 2)) %>% kable %>% kable_styling (bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T)
+```
+
+## Eugene-Springfiled JPI-R results in a Correlation Matrix by Dimensions
+##### Clustering of Dimensions show correlations within JPI-R clusters (5) and justification for using clusters in reporting.   
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+dfcluster <- df1 #%>% left_join(df1) %>% filter (SEX=="F") %>% select (ID, COMPLEX:RESPON)
+dfcluster<-scale(dfcluster)
+
+dfcluster<-data.frame(dfcluster, row.names=1)
+dfcluster<- na.omit(dfcluster)
+
+corrplot(cor(dfcluster), method="color", order="hclust", type="full", addrect=5, cl.lim=c(-1,1), addCoef.col="black", rect.col="green", diag = FALSE, number.font=1, number.digits = 1, number.cex = .7)
+```
+
+## Eugene-Springfiled JPI-R results for Females by Age
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
 df12 %>%  filter(SEX=="F") %>% mutate(Dimension=reorder(Dimension, Score, FUN=mean)) %>%
@@ -165,15 +312,6 @@ df12 %>%  filter(SEX=="F") %>% mutate(Dimension=reorder(Dimension, Score, FUN=me
      ylab("AverageScore") + geom_text(aes( label = round(Score, 1) ),  vjust = .0, hjust = -.3, size=3)   + 
      theme(axis.text.x = element_text(angle=20, size=8))
 ```
-
-## Vocational Interests and Correlation to JPI-R Dimensions (Males).
-##### Data extracted from Table 4-18 of the **"JPI-R Technical Manual" by Douglas Jackson** and provided to the author by Sigma.  Table 4-18 is described as Correlations between the Jackson Vocational Interest Survey (JVIS) and the JPI: Males (N = 127).
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-df13<- df_JPIRTechManualInterests
-
-df13 %>% arrange(-INNOVAT) %>%  kable %>% kable_styling (bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T)
-```
-
 
 ## 360 amd 525 PDA Correlations.
 
@@ -187,15 +325,8 @@ df13 %>% arrange(-INNOVAT) %>%  kable %>% kable_styling (bootstrap_options = c("
 ###### This data is filtered for only Males in the Age Range of 20 - 49.
 
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-df20 <- df %>% left_join (df1) %>%  filter (AGE > 20 & AGE < 59, SEX=="M") %>% left_join(df5) %>% left_join(df2, by="ID")
 
-test <- df20 %>% select(ID, COMPLEX:youthful)
-test<-scale(test)
-test<-data.frame(test, row.names=1)
-test<- na.omit(test)
-test<-cor(test)
-test<-as.data.frame(test)
-test <- rownames_to_column(test, "Category") %>% gather(COMPLEX:youthful, key=Category1, value=Correlation)
+
 test1<-test%>% filter(Category %in% c("COMPLEX", "BREADTH", "INNOVAT", "TOLERAN"), Correlation >.5 | Correlation <(-1) )
 
 df21 <- df20 %>% select(ID, COMPLEX, BREADTH, INNOVAT, TOLERAN, clever, complex.x, creative.x, creative.y, deep.y,  curious.x, eloquent, imaginat.y, original, talented, innovati, inquisit, intellec.x, philosop.x, reliable.x, adaptabl)
@@ -290,36 +421,3 @@ corrplot(cor(dfcluster), method="color", order="hclust", type="full", addrect=5,
 ##### Results: 
 * **ORGANIZATION** has moderate/strong correlation wtih the cybersecurity performance traits of **organization, efficiency, perfection**.
 * **RESPONSIBLE** has strong correlation with the trait of **honesty.**
-
-## Summary Table: IPIP Questions
-
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-dfIPIP <- df %>% left_join (df1)  %>% left_join(df6d, by="ID") %>%  filter (AGE > 20 & AGE < 49, SEX=="M")
-
-test2 <- dfIPIP %>% select(ID, COMPLEX:X99)
-test2<-scale(test2)
-test2<-data.frame(test2, row.names=1)
-test2<- na.omit(test2)
-test2<-cor(test2)
-test2<-as.data.frame(test2)
-test2 <- rownames_to_column(test2, "Category") %>% gather(COMPLEX:X99, key=Category1, value=Correlation)
-JPIR <- c("COMPLEX", "BREADTH", "INNOVAT", "TOLERAN", "EMPATH", "ANXIETY", "COOPER", "SOCIAL", "CONFID", "ENERGY", "ASTUTE", "RISK", "ORGAN", "TRADIT", "RESPON")
-
-test2b <- test2 %>% filter (!(Category1 %in% c(JPIR)), Category %in% c(JPIR), Correlation > .5 | Correlation < -.5) %>%  arrange(Category,-Correlation) %>% mutate(IPIP_Item=paste(Category,"_",Category1)) %>%  mutate(Correlation=round(Correlation, 2)) 
-test2b$IPIP_Item <-toupper(test2b$IPIP_Item)
-
-test2b<-rename(test2b, "IPIP_Item#"=Category1) 
-test2b <- test2b %>% left_join(dfIPIPQuestions)
-test2b %>% select(-IPIP_Item) %>% kable %>% kable_styling (bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T)
-
-#write.csv(test2b, "IPIPCorrelationswJPIR.csv")
-#test2d <-dcast(test2c, IPIP_Item ~ Category) %>% dplyr::select(-IPIP_Item)
-
-```
-
-## Summary Table: Adjectives
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-JPIR <- c("COMPLEX", "BREADTH", "INNOVAT", "TOLERAN", "EMPATH", "ANXIETY", "COOPER", "SOCIAL", "CONFID", "ENERGY", "ASTUTE", "RISK", "ORGAN", "TRADIT", "RESPON")
-
-test %>% filter (!(Category1 %in% JPIR), Category %in% JPIR, Correlation > .48 | Correlation < -.48) %>%  arrange(Category,-Correlation) %>% mutate(Correlation=round(Correlation, 2)) %>% kable %>% kable_styling (bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T)
-```
