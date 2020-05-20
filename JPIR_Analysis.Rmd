@@ -19,6 +19,8 @@ library(cluster)
 library(factoextra)
 library(tidyverse)
 library(stats)
+library(ggdendro)
+library(lavaan)
 
 #read files
 df <- as.data.set(spss.portable.file("demographics.por"), to.data.frame=T)
@@ -30,6 +32,7 @@ df_clusteranalysis <- read_excel("ClusterDataTable.xls")
 
 df1 <- as.data.set(spss.portable.file("JPIR_scales-1.por"), to.data.frame=T)
 df1<-as.data.frame(df1)
+df1 %>% write_csv("JPIR_Results_711Observations.csv")
 
 df2 <- as.data.set(spss.portable.file("525_PDA-1.por"), to.data.frame=T)
 df2<-as.data.frame(df2) 
@@ -128,7 +131,7 @@ df12a %>%  filter(Category %in% c("HighSchoolMean", "CollegeMean", "BlueCollarMe
 ## Eugene-Springfield JPI-R results for Males by Age
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 
-df12<-df10 %>% filter(AGE>=20 & AGE<60) %>% mutate (AgeGroup=ifelse(AGE<30, "20s", ifelse(AGE<40, "30s", ifelse(AGE<50, "40s", ifelse(AGE<60, "50s", ifelse(AGE<70, "60s", "70+")))))) %>% summarySE(measurevar = "Score", groupvars = c("Dimension", "AgeGroup", "SEX" ))
+df12<-df10 %>% filter(AGE>=30 & AGE<60) %>% mutate (AgeGroup=ifelse(AGE<40, "30s", ifelse(AGE<50, "40s", ifelse(AGE<60, "50s", ifelse(AGE<70, "60s", "70+"))))) %>% summarySE(measurevar = "Score", groupvars = c("Dimension", "AgeGroup", "SEX" ))
 
 df12 %>%  filter(SEX=="M") %>% mutate(Dimension=reorder(Dimension, Score, FUN=mean)) %>%
      ggplot(aes(x=Dimension, y=Score, color=AgeGroup)) + geom_point(size=2) + 
@@ -178,8 +181,39 @@ df_clustanalysis2 %>% ggplot() +
 df13<- df_JPIRTechManualInterests
 
 df13 %>% arrange(-INNOVAT) %>%  kable %>% kable_styling (bootstrap_options = c("striped", "hover", "condensed"), fixed_thead = T)
+
 ```
 
+##### Dendrogram of Vocational Interests
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+df13a<-data.frame(df13, row.names = 1)
+clusters<- hclust((dist(df13a)))
+clusters %>% ggdendrogram(rotate=TRUE, theme_dendro = TRUE, size=4) + ggsave("Interest Dendrogram.jpg",  width= 5, height= 6, units = "in")
+```
+
+##### Plot of Correlations of Vocational Interests and JPI-R results
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+df13b <- df13 %>% filter(JVISScale %in% c("Mathematics", "Engineering", "Stamina", "Sales")) %>% 
+     gather(COMPLEX:RESPON, key=Category, value=Correlation) 
+df13b$Category <-as.factor(df13b$Category) 
+#, "CreativeArts"
+
+df13c <- df13b %>% filter(JVISScale %in% c("Mathematics", "Sales")) %>% group_by(Category) %>% summarise(sd=sd(Correlation)) 
+df13d <- df13b %>% filter(JVISScale %in% c("Mathematics")) %>% mutate(Side=if_else(Correlation>0, "Positive", "Negative")) %>%  select (-JVISScale, -Correlation)
+
+df13e <- df13b %>% left_join(df13c) %>% left_join(df13d) %>% mutate(Group=if_else(Category %in% c("INNOVAT", "COMPLEX", "BREADTH", "TOLERAN"), "Analytical", if_else(Category %in% c("EMPATH", "ANXIETY", "COOPER"), "Emotional", if_else(Category %in% c("SOCIAL", "CONFID", "ENERGY"), "Exroverted", if_else(Category %in% c("ASTUTE", "RISK"), "Opportunistic", "Responsibility")))))
+
+df13e %>% 
+     mutate(Category = fct_reorder(Category, sd, .fun='max')) %>% 
+     ggplot(aes(x=Category, y=Correlation, color=JVISScale)) + 
+     geom_point() +coord_flip() + ggtitle("Correlations of JVIS and JPI-R (Males n=127)") +
+     scale_color_manual(values=c("darkgreen", "darkgreen", "red", "green")) +
+     theme(legend.title= element_text(color="blue", size=10), legend.position = "top") +
+     ggsave("Mathematics Interest Dendrogram.jpg", width= 5, height= 6, units = "in") + facet_grid(Group~., scales = "free_y")
+```
 
 ## JPI-R correlations to a test constructed of 8-10 IPIP Items for each JPI-R dimension
 ##### All CAPS represents the JPI-R dimension; lower case represents a replicated scale using IPIP items.
@@ -188,9 +222,10 @@ df13 %>% arrange(-INNOVAT) %>%  kable %>% kable_styling (bootstrap_options = c("
 dfIPIP2<- df %>% left_join (df1)  %>% left_join(df6d, by="ID") %>% filter(SEX=="M")
 
 #Reverse Scores for select columnn
-columnsToReverse <-  c('V91',	'S16',	'X218',	'V189',	'V43',	'V211',	'X228',	'S22',	'X272',	'E141', 'P346',	'V49',	'X250',	'V183',	'X157',	'X265',	'X176',	'H587',	'Q45',	'E134',	'E7',	'X239',	'V187',	'D93',	'E71',	'X178',	'X109',  'H704',  'V282', 'H931',	'E100',	'V128',	'H627',	'V332',	'R24',	'H1144',	'X269',	'X254',	'X173',	'E166',	'H317',	'D100',	'X103',	'V6',	'X118',	'H312',	'H897',	'V103',	'Q108',	'E83',	'H701',	'Q143',	'P431',	'Q30',	'X28',	'H1042',	'H369',	'Q218',	'S26',	'E144', 'N23')
+columnsToReverse <-  c('V91',	'S16',	'X218',	'V189',	'V43',	'V211',	'X228',	'S22',	'X272',	'E141', 'P346',	'V49',	'X250',	'V183',	'X157',	'X265',	'X176',	'H587',	'Q45',	'E134',	'E7',	'X239',	'V187',	'D93',	'E71',	'X178',	'X109',  'H704',  'V282', 'H931',	'E100',	'V128',	'H627',	'V332',	'R24',	'H1144',	'X269',	'X254',	'X173',	'E166',	'H317',	'D100',	'X103',	'V6',	'X118',	'H312',	'H897',	'V103',	'Q108',	'E83',	'H701',	'Q143',	'P431',	'Q30',	'X28',	'H1042',	'H369',	'Q218',	'S26',	'E144', 'N23', "X248", "E171")
 
 dfIPIP2[,columnsToReverse] <- 6-dfIPIP2[, columnsToReverse]
+
 
 #Raw Scoring (124 Questions)
 dfIPIP3 <- dfIPIP2 %>% group_by(ID) %>%  
@@ -200,16 +235,16 @@ dfIPIP3 <- dfIPIP2 %>% group_by(ID) %>%
             "Complex" = (sum(X228,	X176,	X178,	V291,	X254,	H1276,	X239,	X28) / 40) , #X248 
             "Confid" = (sum(V43,	S22,	V91,	Q134,	S29,	P364,	Q45,	S16	) / 40) , #Q14,P346,	Q176, H17
             "Cooper" = (sum(E134,	P420,	H1028,	D107,	H96,	H369	,V187,	P431	)/ 40), #H1057,	P441,H961 
-            "Empath" = (sum(D93,	E174,	D19,	X253,	H173,	E144,	D6) / 40) , #,	E166,	V128,	H701,	Q256
-            "Energy" = (sum(H54,	H2015,	H554,	H627,	H533,	H555,	Q151,	D109) / 40) , #	V211,	H1144,	V50,	H79
-            "Innovat" = (sum(X272,	H53,	V259,	H1313,	X14,	V5,	V226,	H1230) / 40) , #H471,	V189,	H1279,	V155 
-            "Organ" = (sum(E7	,V98,	Q104,	E11,	V49,	H931,	H1161,	Q163) / 40) , #,	H215,	V261,	H897,	E100
-            "Respon" = (sum(Q111,	Q254,	D52,	V103,	Q108,	H152,	Q143,	V93) / 40) , #addedH1303, V170, V304, N23
+            "Empath" = (sum(D19, X253, H173, D6, Q256) / 25) , #,	E166,	V128,	H701,	Q256
+            "Energy" = (sum(H54, H2015, H554, Q151, H79) / 25) , #	V211,	H1144,	V50,	H79
+            "Innovat" = (sum(H53, V259, V226, H447, X225) / 25) , #H471,	V189,	H1279,	V155 
+            "Organ" = (sum(V98, Q163, V261, H258, V12) / 25) , #,	H215,	V261,	H897,	E100
+            "Respon" = (sum(H152, V303, D10, E80, V170) / 25) , #addedH1303, V170, V304, N23
             "Risk" = (sum(S4,	H864,	X250	,S1,	H876,	Q95,	H317	,S19		) / 40) ,  #E71,	R58,	R69
-            "Social" = (sum(D70,	H587,	H965,	X103,	V183,	E83,	D3,	H527) / 40) , #,	H704,	H78,	X161,	H1366
-            "Toleran" = (sum(R24,	D100,	X173,	H456,	H1104,	Q218, D21, H312) / 50) , #	,		V6,	X118
-            "Tradit"= (sum(X218,	V282,	V39,	Q193,	X126,	X35,	V210,	P458) / 40) ) %>% #,	P479,	Q26,	V84,	X157
-          select (ID, COMPLEX:RESPON, Anxiety:Tradit) 
+            "Social" = (sum(D70, H1366, X161, X112, S29) / 25) , #,	H704,	H78,	X161,	H1366
+            "Toleran" = (sum(H148, Q59, X59, D113, X90) / 25) , #	,		V6,	X118
+            "Tradit"= (sum(X218,	V282,	V39,	Q193,	X126,	X35,	V210,	P458) / 40) ) %>% #,	P479,	Q26,	V84,	X157,
+           select (ID, COMPLEX:RESPON, Anxiety:Tradit) 
 
 dfcluster <- dfIPIP3
 dfcluster<-scale(dfcluster)
@@ -260,7 +295,7 @@ test2<-as.data.frame(test2)
 test2 <- rownames_to_column(test2, "Category") %>% gather(COMPLEX:X99, key=Category1, value=Correlation)
 JPIR <- c("COMPLEX", "BREADTH", "INNOVAT", "TOLERAN", "EMPATH", "ANXIETY", "COOPER", "SOCIAL", "CONFID", "ENERGY", "ASTUTE", "RISK", "ORGAN", "TRADIT", "RESPON")
 
-test2b <- test2 %>% filter (!(Category1 %in% c(JPIR)), Category %in% c(JPIR), Correlation > .5 | Correlation < -.5) %>%  arrange(Category,-Correlation) %>% mutate(IPIP_Item=paste(Category,"_",Category1)) %>%  mutate(Correlation=round(Correlation, 2)) 
+test2b <- test2 %>% filter (!(Category1 %in% c(JPIR)), Category %in% c(JPIR), Correlation > .25 | Correlation < -.9) %>%  arrange(Category,-Correlation) %>% mutate(IPIP_Item=paste(Category,"_",Category1)) %>%  mutate(Correlation=round(Correlation, 2)) 
 test2b$IPIP_Item <-toupper(test2b$IPIP_Item)
 
 test2b<-rename(test2b, "IPIP_Item#"=Category1) 
@@ -421,3 +456,191 @@ corrplot(cor(dfcluster), method="color", order="hclust", type="full", addrect=5,
 ##### Results: 
 * **ORGANIZATION** has moderate/strong correlation wtih the cybersecurity performance traits of **organization, efficiency, perfection**.
 * **RESPONSIBLE** has strong correlation with the trait of **honesty.**
+
+
+######################################################Calculations for CATTCON Work
+df6 <- as.data.set(spss.portable.file("IPIP2539-1.por"), to.data.frame=T)
+df6 <- as.data.frame(df6) %>% select(H1311, X211, X201, H1322, X100, X225, X248, X176, X109, E171, H2000,H763,H1068,H356,H292,H709,H1082,H507, H698,H1028,E134,H319,H315,H424,E31,H60,E3,H510 )
+df6<-rownames_to_column(df6, "ID")
+
+#Reverse Scores for select columnn
+columnsToReverse <-  c("X248", "X176", "X109", "E171", "H763", "H292", "H709", "H1082", "H507", "H1028", "H319", "H315", "E31", "E3")
+
+
+df_CATTCON<- df6 
+summary(df_CATTCON)
+
+#df_CATTCONx<-df_CATTCON %>% select (H2000,H763,H1068,H356,H292,H709,H1082,H507)
+
+df_CATTCON[,columnsToReverse] <- 6-df_CATTCON[, columnsToReverse]
+summary(df_CATTCON)
+
+summary(df_CATTCON2c)
+df_CATTCON2a <- df_CATTCON %>% group_by(ID) %>%  
+     mutate("NeedforCognition" = (sum(H1311, X211, X201, H1322, X100, X225, X248, X176, X109, E171)/10)) %>%  
+            select(ID, NeedforCognition) %>% na.omit()
+summarySE(df_CATTCON2a,  measurevar = "NeedforCognition")
+
+df_CATTCON2b <- df_CATTCON %>% group_by(ID) %>%  
+     mutate("Adaptability" = (sum(H2000,H763,H1068,H356,H292,H709,H1082,H507)/8)) %>% select(ID, Adaptability) %>% 
+     na.omit()
+summarySE(df_CATTCON2b,  measurevar ="Adaptability")
+
+df_CATTCON2c <- df_CATTCON %>% group_by(ID) %>%  
+     mutate("NonConformity" = (sum(H698,H1028,E134,H319,H315,H424,E31,H60,E3,H510)/10)) %>% select(ID, NonConformity) %>% 
+     na.omit()
+summarySE(df_CATTCON2c,  measurevar ="NonConformity")
+
+
+# Confirmatory Factor Analysis (Empathy)
+
+df_empathy <- dfIPIP2 %>% select(ID, D93,	E174,	D19, X253,	H173,	D6,	E144, E166,	V128,	H701,	Q256, X92)
+df_empathy <- data.frame(df_empathy, row.names=1)
+df_empathy <- na.omit(df_empathy)
+round(cor(df_empathy[,1:11]),2)
+m3a <- 'f =~ 	D19+ X253+	H173+		D6+		Q256  ' 
+
+onefactoranalysis <- cfa(m3a, data=df_empathy, std.lv=TRUE) 
+
+summary(onefactoranalysis, fit.measures=TRUE, standardized=TRUE)
+
+# Confirmatory Factor Analysis (Social)
+df_social <- dfIPIP2 %>% select(ID, D70,	H587,	H965,	X103,	V183,	E83,	D3,	H527,	H704,	H78,	X161,	H1366, E55, X99, D70, H1366, X112, S29)
+
+df_social <- data.frame(df_social, row.names=1)
+
+df_social <- na.omit(df_social)
+#round(cor(df_social[,1:8]),2)
+
+m3a <- 'f =~ D70+		X161 	+  H1366 + X112 + S29' 
+
+onefactoranalysis <- cfa(m3a, data=df_social, std.lv=TRUE) 
+
+summary(onefactoranalysis, fit.measures=TRUE, 
+
+standardized=TRUE)
+
+# Confirmatory Factor Analysis (Responsibility)
+df_responsibility <- dfIPIP2 %>% select(ID, Q111,	Q254,	D52,	V103,	Q108,	H152,	Q143,	V93, E80, D6, V303, D10, V170, Q192, V253, X136)
+
+df_responsibility <- data.frame(df_responsibility, row.names=1)
+
+df_responsibility <- na.omit(df_responsibility)
+#round(cor(df_responsibility[,1:8]),2)
+
+m3a <- 'f =~  H152+	V303 + D10  + E80 + V170' 
+
+onefactoranalysis <- cfa(m3a, data=df_responsibility, std.lv=TRUE) 
+
+summary(onefactoranalysis, fit.measures=TRUE, 
+
+standardized=TRUE)
+
+# Confirmatory Factor Analysis (Complexity)
+df_complexity <- dfIPIP2 %>% select(ID, X228,	X176,	X178,	V291,	X254,	H1276,	X239,	X28, E133)
+
+df_complexity <- data.frame(df_complexity, row.names=1)
+
+df_complexity <- na.omit(df_complexity)
+#round(cor(df_complexity[,1:8]),2)
+
+m3a <- 'f =~ X228 +	X176 +	V291 +	H1276 +	X239 +	X28 ' 
+
+onefactoranalysis <- cfa(m3a, data=df_complexity, std.lv=TRUE) 
+
+summary(onefactoranalysis, fit.measures=TRUE, 
+
+standardized=TRUE)
+
+# Confirmatory Factor Analysis (Innovative)
+df_innovative <- dfIPIP2 %>% select(ID, X272,	H53,	V259,	H1313,	X14,	V5,	V226,	H1230,H471,	V189,	H1279,	V155, H447, H1227, X225
+ )
+
+df_innovative <- data.frame(df_innovative, row.names=1)
+
+df_innovative <- na.omit(df_innovative)
+#round(cor(df_innovative[,1:8]),2)
+
+m3a <- 'f =~ 	H53+	V259+	V226+  H447 +  X225
+' 
+
+onefactoranalysis <- cfa(m3a, data=df_innovative, std.lv=TRUE) 
+
+summary(onefactoranalysis, fit.measures=TRUE, 
+
+standardized=TRUE)
+
+# Confirmatory Factor Analysis (Organization)
+df_organization <- dfIPIP2 %>% select(ID, E7	,V98,	Q104,	E11,	V49,	H931,	H1161,	Q163,H215,	V261,	H897,	E100, H258, X87, E119, V12
+ )
+
+df_organization <- data.frame(df_organization, row.names=1)
+
+df_organization <- na.omit(df_organization)
+#round(cor(df_organization[,1:8]),2)
+
+m3a <- 'f =~ V98+	Q163+	V261  + H258 +  V12
+' 
+
+onefactoranalysis <- cfa(m3a, data=df_organization, std.lv=TRUE) 
+
+summary(onefactoranalysis, fit.measures=TRUE, 
+
+standardized=TRUE)
+
+# Confirmatory Factor Analysis (Energy)
+df_energy <- dfIPIP2 %>% select(ID, H54,	H2015,	H554,	H627,	H533,	H555,	Q151,	D109,	V211,	H1144,	V50,	H79
+ )
+
+df_energy <- data.frame(df_energy, row.names=1)
+
+df_energy <- na.omit(df_energy)
+#round(cor(df_energy[,1:8]),2)
+
+m3a <- 'f =~ H54+	H2015+	H554+		+		Q151+	H79
+' 
+
+onefactoranalysis <- cfa(m3a, data=df_energy, std.lv=TRUE) 
+
+summary(onefactoranalysis, fit.measures=TRUE, 
+
+standardized=TRUE)
+
+# Confirmatory Factor Analysis (Tolerance)
+df_tolerance <- dfIPIP2 %>% select(ID, R24,	D100,	X173,	H456,	H1104,	Q218, D21, H312,	V6,	X118, H1456, Q189, D100, V69, Q77, D22, D21, D113, H22, H160, E126, X90, H148, Q59, X59, D113, H1360, H1106, E176
+ )
+
+df_tolerance <- data.frame(df_tolerance, row.names=1)
+
+df_tolerance <- na.omit(df_tolerance)
+#round(cor(df_tolerance[,1:8]),2)
+
+m3a <- 'f =~	H148 + Q59 + X59 +  D113 + X90
+' 
+#D22 + D113 + H22 +  E126 + X90
+onefactoranalysis <- cfa(m3a, data=df_tolerance, std.lv=TRUE) 
+
+summary(onefactoranalysis, fit.measures=TRUE, 
+
+standardized=TRUE)
+
+
+
+#Raw Scoring (124 Questions)
+dfIPIP3 <- dfIPIP2 %>% group_by(ID) %>%  
+     mutate("Anxiety" = (sum(H926,	X269, H927, H754, H761, E92, X265,	H755 ) / 40) , #H758, E141      
+            "Astute" = (sum(R78,	P432,	H2006,	Q61,	Q30,	H773,	H450,	S26, H2003)/ 45), #,, H1137		
+            "Breadth" = (sum(X109,	V2,	H1247,	X211,	H1284,	H1042,	H1259,	V140, V332	) / 45) , #	H1293,	 D72,	H1268
+            "Complex" = (sum(X228,	X176,	X178,	V291,	X254,	H1276,	X239,	X28) / 40) , #X248 
+            "Confid" = (sum(V43,	S22,	V91,	Q134,	S29,	P364,	Q45,	S16	) / 40) , #Q14,P346,	Q176, H17
+            "Cooper" = (sum(E134,	P420,	H1028,	D107,	H96,	H369	,V187,	P431	)/ 40), #H1057,	P441,H961 
+            "Empath" = (sum(D93,	E174,	D19,	X253,	H173,	E144,	D6) / 35) , #,	E166,	V128,	H701,	Q256
+            "Energy" = (sum(H54,	H2015,	H554,	H627,	H533,	H555,	Q151,	D109) / 40) , #	V211,	H1144,	V50,	H79
+            "Innovat" = (sum(X272,	H53,	V259,	H1313,	X14,	V5,	V226,	H1230) / 40) , #H471,	V189,	H1279,	V155 
+            "Organ" = (sum(E7	,V98,	Q104,	E11,	V49,	H931,	H1161,	Q163) / 40) , #,	H215,	V261,	H897,	E100
+            "Respon" = (sum(Q111,	Q254,	D52,	V103,	Q108,	H152,	Q143,	V93) / 40) , #addedH1303, V170, V304, N23
+            "Risk" = (sum(S4,	H864,	X250	,S1,	H876,	Q95,	H317	,S19		) / 40) ,  #E71,	R58,	R69
+            "Social" = (sum(D70,	H587,	H965,	X103,	V183,	E83,	D3,	H527) / 40) , #,	H704,	H78,	X161,	H1366
+            "Toleran" = (sum(R24,	D100,	X173,	H456,	H1104,	Q218, D21, H312) / 50) , #	,		V6,	X118
+            "Tradit"= (sum(X218,	V282,	V39,	Q193,	X126,	X35,	V210,	P458) / 40) ) %>% #,	P479,	Q26,	V84,	X157,
+           select (ID, COMPLEX:RESPON, Anxiety:Tradit) 
