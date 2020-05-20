@@ -3,41 +3,35 @@ JPI-R Analysis
 
 ## Data obtained from the **The Eugene-Springfield Community Sample** repository at the **dataverse,** harvard.edu.
 
-## Cluster Plot of JPI-R Dimensions
+## Eugene-Springfield JPI-R Results by Gender
 
-##### Clustering of Dimensions show correlations within JPI-R clusters, though not strong.
+###### The **blue dashed line** represents mean values for males reported in Table 1-2 of the **“JPI-R Technical Manual” by Douglas Jackson** and provided to the author by Sigma.
 
 ![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-1-1.png)<!-- -->
 
-## JPI-R Results by 15 Dimensions and Faceted by Gender
+## JPI-R Technical Manual results for Males by select demographics.
 
-##### Blue dashed line represents mean values for males reported in Table 1-2 of the **“JPI-R Technical Manual” by Douglas Jackson** and provided to the author by Sigma.
+##### Categories: High School, College, Blue Collar, Executives
+
+###### Data extracted from Table 1-2 of the **“JPI-R Technical Manual” by Douglas Jackson** and provided to the author by Sigma.
 
 ![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
-##### Greatest variability in the following Dimensions: INNOVAT, CONFID, RISK, BREADTH, ANXIETY, SOCIAL, EMPATH, COOPER, ENERGY, TRADIT, ORGAN
-
-##### Lowest variability in the following Dimensions: ASTUTE, TOLERAN, COMPLEX, RESPON
-
-## Male results by select demographics.
-
-#### Categories: High School, College, Blue Collar, Executives
-
-##### Data extracted from Table 1-2 of the **“JPI-R Technical Manual” by Douglas Jackson** and provided to the author by Sigma.
+## Eugene-Springfield JPI-R results for Males by Age
 
 ![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
-## Male results by AGE
+## K-Means Cluster Analysis of Eugene-Springfiled JPI-R results for males
 
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->
+##### K-means cluster analysis aimed to define 10 most common profiles of males. This approach is also presented in the JPI-R Technical Manual Modal Profile Analysis.
 
-## Female results by AGE
+###### As described by Jackson: “Each modal profile represents the personality profile and the patterning of behavioral dimensions that is characteristic of the subset of persons in a particular population. In general, individuals will not be perfect representations of a single modal profile but, rather, combinations of several profiles. Even so, the modal profile most similar to an individual’s observed profile is likely to describe him or her best. By the identification of a variety of modal profiles that appear with some frequency in the population, it is possible to classify a majority of the individuals in terms of their similarities to these “pure” types. The extent to which this is possible is an empirical matter, but the goal is to reduce the apparently chaotic diversity of individual profiles to a manageable system involving relatively few modal profiles."
 
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-4-1.png)<!-- -->![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-4-2.png)<!-- -->
 
-## Vocational Interests and Correlation to JPI-R Dimensions (Males).
+## Correlation of Vocational Interests to JPI-R Dimensions for Males
 
-##### Data extracted from Table 4-18 of the **“JPI-R Technical Manual” by Douglas Jackson** and provided to the author by Sigma. Table 4-18 is described as Correlations between the Jackson Vocational Interest Survey (JVIS) and the JPI: Males (N = 127).
+###### Data extracted from Table 4-18 of the **“JPI-R Technical Manual” by Douglas Jackson** and provided to the author by Sigma. Table 4-18 is described as Correlations between the Jackson Vocational Interest Survey (JVIS) and the JPI: Males (N = 127).
 
 <table class="table table-striped table-hover table-condensed" style="margin-left: auto; margin-right: auto;">
 
@@ -3451,69 +3445,15 @@ JobSecurity
 
 </table>
 
-## 360 amd 525 PDA Correlations.
+## JPI-R correlations to a test constructed of 8-10 IPIP Items for each JPI-R dimension
 
-#### This analysis aligns well-documented cybersecurity behavioral traits to the 15 measures in the JPI-R. These relationships aim to identify dimensions where high scores may suggest a propensity for cybersecurity roles.
+##### All CAPS represents the JPI-R dimension; lower case represents a replicated scale using IPIP items.
 
-###### The 360 PDA is an inventory of person-descriptive adjectives that included Goldberg’s (1992) 100 unipolar Big-Five factor markers, plus terms from each of the item clusters that have been hypothesized as potentially beyond the Big Five (Saucier & Goldberg, 1998).
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
-###### The 525-PDA, a set of the 500 most familiar English person-descriptive adjectives (Saucier, 1997), plus the terms from Saucier’s (1994) 40-item Big-Five “Mini-Markers” that were not already included.
-
-## JPI-R Cluster 1: Analytical
-
-##### This shows the JPI-R Dimensions for “Analytical” in ALL CAPS and a selection of the 360/525 PDA markers in all lower case.
-
-###### This data is filtered for only Males in the Age Range of 20 - 49.
+## Demonstration of JPI-R and IPIP test results for a select individual
 
 ![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
-
-##### Results:
-
-  - **INNOVATIVE** has strong corrleation to the cyberseucrity
-    performance traits of: **creative, imaginative, curious,
-    innovative.**
-
-## JPI-R Cluster 2: Emotional
-
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
-
-##### Results:
-
-  - None to note.
-
-## JPI-R Cluster 3: Extroverted
-
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
-
-##### Results:
-
-  - **ENERGY** has strong correlation wtih the cybersecurity performance
-    traits of **energetic, active, and vigorous**.
-  - **SOCIAL / SOCIAL CONFIDENCE** have a strong corrleation with
-    **social and extraverted** and a strong negative correlation with
-    **introverted**; cybersecurity professionals report generally low
-    sociability and high introversions.
-
-## JPI-R Cluster 4: Opportunistic
-
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
-
-##### Results:
-
-  - **RISK** has moderate correlation wtih the cybersecurity performance
-    traits of **daring, independent, and competitive**.
-
-## JPI-R Cluster 5: Dependable
-
-![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
-
-##### Results:
-
-  - **ORGANIZATION** has moderate/strong correlation wtih the
-    cybersecurity performance traits of **organization, efficiency,
-    perfection**.
-  - **RESPONSIBLE** has strong correlation with the trait of
-    **honesty.**
 
 ## Summary Table: IPIP Questions
 
@@ -9200,3 +9140,77 @@ liberal.x
 </tbody>
 
 </table>
+
+## Eugene-Springfiled JPI-R results in a Correlation Matrix by Dimensions
+
+##### Clustering of Dimensions show correlations within JPI-R clusters (5) and justification for using clusters in reporting.
+
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+
+## Eugene-Springfiled JPI-R results for Females by Age
+
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+## 360 amd 525 PDA Correlations.
+
+#### This analysis aligns well-documented cybersecurity behavioral traits to the 15 measures in the JPI-R. These relationships aim to identify dimensions where high scores may suggest a propensity for cybersecurity roles.
+
+###### The 360 PDA is an inventory of person-descriptive adjectives that included Goldberg’s (1992) 100 unipolar Big-Five factor markers, plus terms from each of the item clusters that have been hypothesized as potentially beyond the Big Five (Saucier & Goldberg, 1998).
+
+###### The 525-PDA, a set of the 500 most familiar English person-descriptive adjectives (Saucier, 1997), plus the terms from Saucier’s (1994) 40-item Big-Five “Mini-Markers” that were not already included.
+
+## JPI-R Cluster 1: Analytical
+
+##### This shows the JPI-R Dimensions for “Analytical” in ALL CAPS and a selection of the 360/525 PDA markers in all lower case.
+
+###### This data is filtered for only Males in the Age Range of 20 - 49.
+
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+
+##### Results:
+
+  - **INNOVATIVE** has strong corrleation to the cyberseucrity
+    performance traits of: **creative, imaginative, curious,
+    innovative.**
+
+## JPI-R Cluster 2: Emotional
+
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+
+##### Results:
+
+  - None to note.
+
+## JPI-R Cluster 3: Extroverted
+
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+
+##### Results:
+
+  - **ENERGY** has strong correlation wtih the cybersecurity performance
+    traits of **energetic, active, and vigorous**.
+  - **SOCIAL / SOCIAL CONFIDENCE** have a strong corrleation with
+    **social and extraverted** and a strong negative correlation with
+    **introverted**; cybersecurity professionals report generally low
+    sociability and high introversions.
+
+## JPI-R Cluster 4: Opportunistic
+
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-15-1.png)<!-- -->
+
+##### Results:
+
+  - **RISK** has moderate correlation wtih the cybersecurity performance
+    traits of **daring, independent, and competitive**.
+
+## JPI-R Cluster 5: Dependable
+
+![](JPIR_Analysis_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+
+##### Results:
+
+  - **ORGANIZATION** has moderate/strong correlation wtih the
+    cybersecurity performance traits of **organization, efficiency,
+    perfection**.
+  - **RESPONSIBLE** has strong correlation with the trait of
+    **honesty.**
